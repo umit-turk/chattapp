@@ -1,19 +1,25 @@
-import React from 'react'
-import { Grid } from "semantic-ui-react"
-import SidePanel from './components/SidePanel/SidePanel'
+import React from "react";
+import { useSelector } from "react-redux";
+import { Grid } from "semantic-ui-react";
+import ChatPanel from "./components/ChatPanel/ChatPanel";
+import SidePanel from "./components/SidePanel/SidePanel";
 
-function App() {
+const App = () => {
+  const currentChannel = useSelector((state) => state.channels.currentChannel);
+
   return (
-    <Grid columns="2"  style={{background:"#eee", height:"110vh"}}>
-      <Grid.Column width="3" style={{background:"#000"}}>
-      {/* Sidebar */}
-      <SidePanel />
-      </Grid.Column>
-      <Grid.Column width="13" style={{background: "#eee"}}>
-      {/* chat ppanel */}
-      </Grid.Column>
+    <Grid columns="2" style={{ background: "#eee", height: "110vh" }}>
+      <Grid.Row>
+        <Grid.Column width={3}>
+          <SidePanel />
+        </Grid.Column>
+
+        <Grid.Column style={{ background: "#fff" }} width={13}>
+          {currentChannel && <ChatPanel currentChannel={currentChannel} />}
+        </Grid.Column>
+      </Grid.Row>
     </Grid>
   );
-}
+};
 
 export default App;

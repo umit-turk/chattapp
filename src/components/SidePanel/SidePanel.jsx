@@ -2,6 +2,7 @@ import React, {useState} from 'react'
 import { Popup, Menu, Icon } from "semantic-ui-react";
 import CreateChannelForm from '../Channels/CreateChannelForm';
 import ChannelList from '../Channels/ChannelList';
+import UserPanel from "../UserPanel/UserPanel"
 
 const SidePanel = () => {
 
@@ -24,12 +25,13 @@ const SidePanel = () => {
        color="blue"
        fixed="left"
        style={{
-           width: "346px",
+           width: "246px",
            fontSize: "1.3rem",
        }}
        >
        <Menu.Item>
            {/* userpanel */}
+           <UserPanel />
        </Menu.Item>
 
        <Menu.Item>
