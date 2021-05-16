@@ -33,15 +33,15 @@ const ChatPanel = ({ currentChannel }) => {
   const [content, setContent] = useState("");
 
   const fileInputRef = useRef(null);
-  const messagesEndRef = useRef(null)
+  const messagesEndRef = useRef(null);
 
   //scroll ayarı için.Birşey yazdığımız anda otomatik olarak aşşağı iniyor.
   useEffect(() => {
-      messagesEndRef.current.scrollIntoView({
-          behaviour: "smooth",
-          block: "end",
-      })
-  })
+    messagesEndRef.current.scrollIntoView({
+      behaviour: "smooth",
+      block: "end",
+    });
+  });
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -69,32 +69,52 @@ const ChatPanel = ({ currentChannel }) => {
       const storageRef = firebase.storage().ref();
       const fileRef = storageRef.child(`chat/public/${uuid()}.jpg`);
 
-      return fileRef.put(file).then((snap) => {
-        fileRef.getDownloadURL().then((downloadURL) => {
-          sendMediaMessage(downloadURL);
+      return fileRef
+        .put(file)
+        .then((snap) => {
+          fileRef.getDownloadURL().then((downloadURL) => {
+            sendMediaMessage(downloadURL);
+          });
+        })
+        .catch((err) => {
+          console.log("error uploading file", err);
         });
-      })
-      .catch((err) => {
-          console.log("error uploading file", err)
-      })
     }
   };
 
-  const sendMediaMessage = url => {
-      const message = {
-          image: url,
-          timestamp: firebase.database.ServerValue.TIMESTAMP,
-          user: {
-              id: currentUserUid,
-              name: profile.name,
-              avatar: profile.avatar,
-          }
+  const sendMediaMessage = (url) => {
+    const message = {
+      image: url,
+      timestamp: firebase.database.ServerValue.TIMESTAMP,
+      user: {
+        id: currentUserUid,
+        name: profile.name,
+        avatar: profile.avatar,
+      },
+    };
+    firebase.push(`messages/${currentChannel.key}`, message).then(() => {
+      console.log("Media message sent");
+    });
+  };
+  const filterMessages = () => {
+    const regex = new RegExp(searchTerm, "gi");
+
+    const searchResults = [...channelMessages].reduce((acc, message) => {
+      if (
+        (message.value.content && message.value.content.match(regex)) ||
+        (message.value.user && message.value.user.name.match(regex))
+      ) {
+        acc.push(message);
       }
-      firebase.push(`messages/${currentChannel.key}`, message)
-      .then(() => {
-          console.log("Media message sent");
-      })
-  }
+
+      return acc;
+    }, []);
+
+    return searchResults;
+  };
+
+  const renderedMessages =
+    searchTerm !== "" ? filterMessages() : channelMessages;
 
   return (
     <>
@@ -125,12 +145,12 @@ const ChatPanel = ({ currentChannel }) => {
         <Comment.Group
           style={{ height: "80vh", overflowY: "auto", maxWidth: "100%" }}
         >
-          {channelMessages &&
-            channelMessages.map(({ key, value }) => (
+          {renderedMessages &&
+            renderedMessages.map(({ key, value }) => (
               <Message key={key} message={value} />
             ))}
 
-            <div ref={messagesEndRef}></div>
+          <div ref={messagesEndRef}></div>
         </Comment.Group>
       </Segment>
       {/* Send New Message */}
@@ -152,7 +172,7 @@ const ChatPanel = ({ currentChannel }) => {
           />
         </Button>
 
-        <Form onSubmit={handleSubmit} style={{ flex: "1" }}>
+        <Form onSubmit={handleSubmit} style={{ flex: "1"}}>
           <Input
             fluid
             name="message"
